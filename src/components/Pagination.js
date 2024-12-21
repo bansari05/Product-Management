@@ -4,7 +4,7 @@ const Pagination = ({ totalProducts, productsPerPage, paginate }) => {
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   const pageNumbers = [];
-  for (let i = 1; i <= 5 && i <= totalPages; i++) {
+  for (let i = 1; i <= 10 && i <= totalPages; i++) {
     pageNumbers.push(i);
   }
 

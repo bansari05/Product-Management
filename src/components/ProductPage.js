@@ -9,26 +9,33 @@ const ProductPage = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [page, setPage] = useState(1);
+  const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    axios.get('https://dummyjson.com/products')
-      .then(response => {
-        setProducts(response.data.products);
-        setFilteredProducts(response.data.products);
+    axios
+      .get("https://dummyjson.com/products")
+      .then((response) => {
+        const fetchedProducts = response.data.products;
+        setProducts(fetchedProducts);
+        setFilteredProducts(fetchedProducts);
+        const uniqueCategories = [...new Set(fetchedProducts.map((p) => p.category))];
+        setCategories(["All Categories", ...uniqueCategories]);
         setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
-        setError('Failed to load products. Please try again later.');
+        setError("Failed to load products. Please try again later.");
         setLoading(false);
       });
   }, []);
 
-  // Add product to the cart
+
   const addToCart = (product) => {
     setCart(prevCart => {
       const productInCart = prevCart.find(item => item.id === product.id);
@@ -42,14 +49,12 @@ const ProductPage = () => {
         return [...prevCart, { ...product, quantity: 1 }];
       }
     });
+    setIsModalOpen(true); 
   };
-
-  // Remove product from the cart
   const removeFromCart = (productId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== productId));
   };
 
-  // Update product quantity in the cart
   const updateQuantity = (productId, quantity) => {
     setCart(prevCart => {
       return prevCart.map(item =>
@@ -58,10 +63,15 @@ const ProductPage = () => {
     });
   };
 
-  const filterProducts = (category) => {
-    setCategory(category);
-    setFilteredProducts(products.filter(product => product.category === category || category === ''));
+
+  const filterProducts = (selectedCategory) => {
+    if (selectedCategory === "All Categories" || selectedCategory === "") {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(products.filter((product) => product.category === selectedCategory));
+    }
   };
+
 
   const sortProducts = (order) => {
     const sortedProducts = [...filteredProducts];
@@ -79,10 +89,10 @@ const ProductPage = () => {
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <ProductFilter
-          categories={['beauty', 'fashion', 'groceries']}
+          categories={categories}
           filterProducts={filterProducts}
           sortProducts={sortProducts}
         />
@@ -96,13 +106,16 @@ const ProductPage = () => {
         <div className="text-center text-xl text-red-500">{error}</div>
       ) : (
         <>
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {currentProducts.length > 0 ? (
-              currentProducts.map(product => (
+              currentProducts.map((product) => (
                 <ProductCard key={product.id} product={product} addToCart={addToCart} />
               ))
             ) : (
-              <div className="col-span-full text-center text-xl text-gray-500">No products found.</div>
+              <div className="col-span-full text-center text-xl text-gray-500">
+                No products found.
+              </div>
             )}
           </div>
 
@@ -116,9 +129,23 @@ const ProductPage = () => {
         </>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md">
-        <Cart cart={cart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} />
-      </div>
+{isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold text-center">Product Added to Cart</h2>
+            <div className="mt-4">
+              <Cart cart={cart} removeFromCart={removeFromCart} updateQuantity={updateQuantity} />
+            </div>
+            <button
+              className="mt-4 w-full bg-blue-500 text-white py-2 rounded-md"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

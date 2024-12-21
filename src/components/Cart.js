@@ -13,20 +13,24 @@ const Cart = ({ cart, removeFromCart, updateQuantity }) => {
           cart.map(item => (
             <div key={item.id} className="flex items-center justify-between">
               <div>
-                <p className="text-gray-800">{item.name}</p>
-                <p className="text-sm text-gray-500">{item.category}</p>
+                <p className="text-black">{item.name}</p>
+                <p className="text-sm text-black">{item.category}</p>
               </div>
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
-                >
+              <button
+    onClick={() => {
+      if (item.quantity > 0) {
+        updateQuantity(item.id, item.quantity - 1);
+      }
+    }}
+    className="px-2 bg-gray-200 text-black rounded-md"
+  >
                   -
                 </button>
                 <span className="text-gray-800">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
+                  className="px-2 bg-gray-200 text-black rounded-md"
                 >
                   +
                 </button>
